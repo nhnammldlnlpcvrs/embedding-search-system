@@ -1,0 +1,3 @@
+streamlit>=1.28
+juliacall>=0.9
+Pillow>=10.0

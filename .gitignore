@@ -1,0 +1,123 @@
+# ============================================================================
+# .gitignore — Multimodal Search & RAG Assistant Engine
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# Julia
+# ---------------------------------------------------------------------------
+# Generated package manifest (Project.toml is the source of truth; Manifest
+# records the exact resolved dependency tree and is environment-specific)
+Manifest.toml
+
+# Precompiled object cache
+*.ji
+*.so
+*.dylib
+*.dll
+
+# Local Julia depot (if someone symlinks or places it inside the repo)
+.julia/
+depot/
+
+# Julia sysimage / startup files
+*.so.img
+LocalPreferences.toml
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# ---------------------------------------------------------------------------
+# Data & Assets (CRITICAL — keep large datasets out of Git)
+# ---------------------------------------------------------------------------
+dataset/
+data/
+temp_*
+*.tmp
+tmp/
+
+# Uploaded images stored during Streamlit sessions
+uploaded_images/
+
+# ---------------------------------------------------------------------------
+# Security — credentials, secrets, environment
+# ---------------------------------------------------------------------------
+.env
+.env.*
+*.env
+!*.env.example
+
+# API key dumps and token files
+*.token
+*_credentials.json
+service-account.json
+
+# Any file containing "secret" in the name (case-insensitive)
+*[Ss]ecret*
+
+# ---------------------------------------------------------------------------
+# Docker
+# ---------------------------------------------------------------------------
+# Qdrant persistent data volume (managed by docker compose)
+qdrant_data/
+
+# Docker generic
+.dockerignore
+
+# ---------------------------------------------------------------------------
+# OS junk
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------------------------
+# IDE / Editor
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ---------------------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------------------
+*.log
+*.bak
+.cache/
