@@ -20,11 +20,19 @@ export CLIPEncoder, encode_text, encode_image, mock_text_embed
 # ============================================================================
 
 """
-    CLIPEncoder(model_name::String = "ViT-B/32")
+    CLIPEncoder
 
 Holds configuration for a CLIP-based multimodal encoder.
 
-Fields:
+Constructors
+------------
+- `CLIPEncoder()`                              → mock backend, 512-d
+- `CLIPEncoder(; backend=:mock, dim=512)`      → mock backend, configurable dim
+- `CLIPEncoder(model_name::String)`            → real CLIP via PythonCall
+  (e.g. `CLIPEncoder("ViT-B/32")`)
+
+Fields
+------
 - `model_name` — HuggingFace / OpenAI CLIP variant
 - `dim`        — embedding dimension (512 for ViT-B, 768 for ViT-L)
 - `backend`    — `:clip` (PythonCall) or `:mock` (deterministic hash)
@@ -35,31 +43,54 @@ mutable struct CLIPEncoder
     dim::Int
     backend::Symbol
     _loaded::Bool
-    # Internal Python objects stored as Any to avoid type constraints
     _py_clip::Any
     _py_model::Any
     _py_preprocess::Any
 
-    function CLIPEncoder(model_name::String = "ViT-B/32")
-        dims = Dict{String, Int}(
-            "ViT-B/32" => 512,
-            "ViT-B/16" => 512,
-            "ViT-L/14" => 768,
-        )
-        dim = get(dims, model_name, 512)
-        return new(model_name, dim, :clip, false, nothing, nothing, nothing)
+    # ---- inner constructor: all fields explicit (dispatches via new) ---------
+    function CLIPEncoder(model_name::String, dim::Int, backend::Symbol,
+                         loaded::Bool, py_clip, py_model, py_preprocess)
+        return new(model_name, dim, backend, loaded, py_clip, py_model, py_preprocess)
     end
 end
 
+# ---- outer constructor: named CLIP model (real Python backend) ---------------
+"""
+    CLIPEncoder(model_name::String)
+
+Create an encoder backed by a real CLIP model loaded via PythonCall.
+
+Examples
+--------
+    CLIPEncoder("ViT-B/32")
+    CLIPEncoder("ViT-L/14")
+"""
+function CLIPEncoder(model_name::String)
+    dims = Dict{String, Int}(
+        "ViT-B/32" => 512,
+        "ViT-B/16" => 512,
+        "ViT-L/14" => 768,
+    )
+    dim = get(dims, model_name, 512)
+    return CLIPEncoder(model_name, dim, :clip, false, nothing, nothing, nothing)
+end
+
+# ---- outer constructor: mock backend (keyword-only, zero-dependency) ---------
 """
     CLIPEncoder(; backend::Symbol = :mock, dim::Int = 512)
 
-Construct a mock CLIPEncoder that uses deterministic word-hash projection
-instead of the real CLIP model.
+Create an encoder with a deterministic word-hash projection backend.
+
+This is the **safe default** — no Python, no network, always works.
+Call `CLIPEncoder()` to get a 512-dimensional mock encoder.
+
+Examples
+--------
+    CLIPEncoder()                        # mock, 512-d
+    CLIPEncoder(backend = :mock, dim = 128)
 """
 function CLIPEncoder(; backend::Symbol = :mock, dim::Int = 512)
-    enc = CLIPEncoder("mock-$(dim)d", dim, backend, true, nothing, nothing, nothing)
-    return enc
+    return CLIPEncoder("mock-$(dim)d", dim, backend, true, nothing, nothing, nothing)
 end
 
 # ============================================================================

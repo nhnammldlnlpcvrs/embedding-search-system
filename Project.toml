@@ -1,6 +1,6 @@
 name = "MiniVDB"
-uuid = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-version = "2.0.0"
+uuid = "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+version = "1.0.0"
 authors = ["AI Engineer"]
 
 [deps]
@@ -8,12 +8,14 @@ CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-CSV = "0.10.16"
+CSV = "0.10"
 DataFrames = "1.8.2"
-HTTP = "1.11.0"
-JSON3 = "1.14.3"
-PythonCall = "0.9.32"
+HTTP = "1"
+JSON3 = "1"
+PythonCall = "0.9"
 julia = "1.10"

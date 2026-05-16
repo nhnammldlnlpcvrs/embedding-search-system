@@ -21,9 +21,11 @@ Pkg.instantiate()
 using CSV
 using DataFrames
 
-# ---- Load MiniVDB (local module, not a registered package) ------------------
-push!(LOAD_PATH, joinpath(@__DIR__, "src"))
-using MiniVDB
+# ---- Load MiniVDB (local module) -------------------------------------------
+# Use explicit include() so the module inherits the root environment's deps
+# — avoids the Pkg.develop path-layout requirement (src/src/MiniVDB.jl).
+include(joinpath(@__DIR__, "src", "MiniVDB.jl"))
+using .MiniVDB
 
 # ============================================================================
 # CONFIGURATION
@@ -90,8 +92,10 @@ function ingest_flickr8k(max_images::Int = 50)
     # Normalise column names (handle possible casing / whitespace differences)
     rename!(df, Symbol.(strip.(lowercase.(string.(names(df))))))
 
-    if :image ∉ names(df) || :caption ∉ names(df)
-        error("Expected columns 'image' and 'caption', got: $(names(df))")
+    cols = Symbol.(names(df))
+
+    if :image ∉ cols || :caption ∉ cols
+        error("Expected columns 'image' and 'caption', got: $(cols)")
     end
 
     # ---- 2. Initialise MiniVDB bridge (before accessing encoder state) -------
@@ -108,7 +112,7 @@ function ingest_flickr8k(max_images::Int = 50)
 
     # ---- 3. Select unique images --------------------------------------------
     println("[3/4] Extracting unique images  (limit: $max_images) ...")
-    unique_images = unique(df[!, "image"])
+    unique_images = unique(df[!, :image])
     n_total = length(unique_images)
     n_process = min(max_images, n_total)
     selected = unique_images[1:n_process]
@@ -142,11 +146,11 @@ function ingest_flickr8k(max_images::Int = 50)
         MiniVDB.insert_image(img_path; payload = img_payload)
 
         # --- embed & insert each of the 5 captions --------------------------
-        captions_df = df[df[!, "image"] .== img_filename, :]
+        captions_df = df[df[!, :image] .== img_filename, :]
         ncaps = nrow(captions_df)
 
         for row in eachrow(captions_df)
-            caption = row[!, "caption"]
+            caption = row[!, :caption]
             text_payload = Dict{String, Any}(
                 "type"         => "text",
                 "content"      => caption,
@@ -183,20 +187,28 @@ end
 # ============================================================================
 # ENTRY POINT
 # ============================================================================
+# Runs automatically when the file is executed directly OR included from the
+# REPL via  include("sample_kaggle.jl").  Use  isinteractive  to decide
+# whether to exit on bad arguments (script mode) or just warn (REPL mode).
+# ============================================================================
 
-if abspath(PROGRAM_FILE) == @__FILE__
-    max_images = 50
-    if length(ARGS) >= 1
-        val = tryparse(Int, ARGS[1])
-        if val === nothing
-            println("Usage:  julia --project=. sample_kaggle.jl [max_images]")
+max_images = 50
+if length(ARGS) >= 1
+    val = tryparse(Int, ARGS[1])
+    if val === nothing
+        msg = "Usage:  julia --project=. sample_kaggle.jl [max_images]"
+        if !isinteractive()
+            println(msg)
             exit(1)
+        else
+            @warn msg * "  (using default: 50)"
         end
+    else
         max_images = val
     end
-
-    n = ingest_flickr8k(max_images)
-    println("Indexed $n images into MiniVDB. Query them via:")
-    println("  julia --project=. -e 'using MiniVDB; MiniVDB.main()'")
-    println("  streamlit run app.py")
 end
+
+n = ingest_flickr8k(max_images)
+println("Indexed $n images into MiniVDB. Query them via:")
+println("  julia --project=. -e 'using MiniVDB; MiniVDB.main()'")
+println("  streamlit run app.py")

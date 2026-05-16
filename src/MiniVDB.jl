@@ -10,6 +10,7 @@
 module MiniVDB
 
 using HTTP
+using Printf
 using LinearAlgebra: norm
 
 # ---- Submodules (loaded in dependency order) -------------------------------
